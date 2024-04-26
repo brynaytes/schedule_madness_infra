@@ -7,13 +7,16 @@ env:
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   AWS_DEFAULT_REGION: us-east-1
   AWS_DEFAULT_OUTPUT: json
-  PROJECT_NAME : mine-sweeper-5
+  PROJECT_NAME : scheduler-madness
   CI: false
+  ENV_NAME: development
   
 on:
   push:
     branches: [ "main" ]
   pull_request:
+    branches: [ "main" ]
+  workflow_dispatch: 
     branches: [ "main" ]
 
 jobs:
@@ -62,9 +65,13 @@ jobs:
       working-directory: Website/scheduler-web-app
       run: npm ci
 
+    - name: EnvDocMove
+      working-directory: Website/scheduler-web-app/src/environments
+      run:  cp environment.$ENV_NAME.ts environment.ts
+
     - name: Build
       working-directory: Website/scheduler-web-app
-      run: ng build --configuration=development
+      run:  npm run build
 
     - name: Upload files
       run:  aws s3 cp Website/scheduler-web-app/dist s3://$PROJECT_NAME-site-assets/ --recursive
