@@ -29,15 +29,15 @@ jobs:
     
     - name: TF Init
       run: terraform init
-      working-directory:  terraform
+      working-directory:  Infra
 
         
     - name: TF Plan
-      working-directory:  terraform
+      working-directory:  Infra
       run: terraform plan
     
     - name: TF Apply
-      working-directory:  terraform
+      working-directory:  Infra
       run: terraform apply  -auto-approve
       
 
@@ -59,12 +59,12 @@ jobs:
         node-version: 16
 
     - name: Insall
-      working-directory: Website/mine-sweeper-v2
+      working-directory: Website/scheduler-web-app
       run: npm ci
 
     - name: Build
-      working-directory: Website/mine-sweeper-v2
+      working-directory: Website/scheduler-web-app
       run: ng build --configuration=development
 
     - name: Upload files
-      run:  aws s3 cp Website/Scheduler-web-app/dist s3://$PROJECT_NAME-site-assets/ --recursive
+      run:  aws s3 cp Website/scheduler-web-app/dist s3://$PROJECT_NAME-site-assets/ --recursive
