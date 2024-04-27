@@ -74,4 +74,4 @@ jobs:
       run:  npm run build
 
     - name: Upload files
-      run:  aws s3 cp Website/scheduler-web-app/dist s3://$PROJECT_NAME-site-assets/ --recursive
+      run:  aws s3 cp Website/scheduler-web-app/dist/schedule-madness-angular/browser s3://$PROJECT_NAME-site-assets/ --recursive
