@@ -32,7 +32,7 @@ export const handler = async (event) => {
       body = await  createMeeting(eventBody.data,userID);
       break;
     case "getMeeting" : 
-      body = await  getMeetings( event.data.meetingID);
+      body = await  getMeetings( eventBody.data.meetingID);
       break;
     case "addTimes" : 
       body = await  addTimes(eventBody.data,userID);
