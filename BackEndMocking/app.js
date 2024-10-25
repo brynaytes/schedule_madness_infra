@@ -12,8 +12,16 @@ app.get('/', (req, res) => {
 })
 
  app.post('/meetings', (req, res) => {
+  let temp = {
+    body : JSON.stringify(req.body),
+    headers : {
+      Authorization: req.get("Authorization")
+    }
+  }
+
+
     //The 'then' portion here waits for the async response to resolve
-    handler(req.body).then((temp) => res.send(temp ))
+    handler(temp).then((temp) => res.send(temp ))
   })
 
 app.listen(port, () => {

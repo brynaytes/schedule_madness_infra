@@ -9,6 +9,7 @@
   "author": "bryn aytes",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.679.0",
     "@aws-sdk/client-dynamodb": "^3.675.0",
     "@aws-sdk/lib-dynamodb": "^3.675.0",
     "aws-sdk": "^2.1691.0",

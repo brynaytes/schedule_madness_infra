@@ -1,19 +1,31 @@
 import {  DynamoDBClient,GetItemCommand } from "@aws-sdk/client-dynamodb";
 import { PutCommand, DynamoDBDocumentClient,QueryCommand } from "@aws-sdk/lib-dynamodb";
-import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
+import { CognitoIdentityProviderClient, GetUserCommand } from "@aws-sdk/client-cognito-identity-provider";
 
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
 
 export const handler = async (event) => {
-  let eventBody = event;
+  let eventBody = JSON.parse(event.body);
+  let authToken = event.headers.Authorization;
   let body;
   let userID;
-  if(Object.hasOwn(eventBody, 'user') && eventBody.user != null){
-    userID = eventBody.user;
-  }else{
-      userID = "";
+
+  if(authToken){
+    userID = await doAuth(authToken);
+    if(!userID){
+      const response = {
+        statusCode: 401,
+        body: ("Auth Token was invalid or missing."),
+        headers: { 
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*' // replace with hostname of frontend (CloudFront)
+        },
+      };
+      return response;
+    }
   }
+
 
   switch(eventBody.action){
     case "createMeeting" : 
@@ -36,18 +48,23 @@ export const handler = async (event) => {
       break;
     }
 
-  const response = {
-    statusCode: 200,
-    body: (body),
-  };
+    const response = {
+      statusCode: 200,
+      body: (JSON.stringify(body)),
+      headers: { 
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*' // replace with hostname of frontend (CloudFront)
+      },
+    };
   return response;
 };
 
 async function createMeeting(data,userID){
-  if(userID == ""){
-    return "error";
+
+  if(!userID || userID == ""){
+    return "Authentication is required for this request";
   }
-  let meetingID =  Math.floor(Math.random() *1000000000)+"" ;//needs to become true random
+  let meetingID = Date.now() + Math.floor(Math.random() *100)+"" ;//needs to become true random
   const command = new PutCommand({
     TableName: "MeetingInfo",
     Item: {
@@ -78,9 +95,9 @@ async function getMeetings(meetingID){
 }
 
 async function addTimes(data,userID){
-
+  //Auth optional
   let meetingID =  data.MeetingID;
-  let DateTimeID =  Math.floor(Math.random() *1000000000)+"" ;//needs to become true random
+  let DateTimeID =  Date.now() + Math.floor(Math.random() *100)+"" ;//needs to become true random
 
   const command = new PutCommand({
     TableName: "MeetingAvailability",
@@ -97,6 +114,10 @@ async function addTimes(data,userID){
 }
 
 async function getMeetingList(userID){
+  if(!userID || userID == ""){
+    return "Authentication is required for this request";
+  }
+
   var command = new QueryCommand({
     ExpressionAttributeValues: {
      ":uid": userID
@@ -165,4 +186,22 @@ async function getMeetingAvailabilityList(MeetingID){
   
   return obj;
 }
+
+async function doAuth(authToken){
+    const client = new CognitoIdentityProviderClient({});
+    const input = { // GetUserRequest
+      AccessToken: authToken, // required
+    };
+    let response;
+    const command = new GetUserCommand(input);
+    try{
+      response = await client.send(command);
+    }catch(e){
+        return false;
+    }
+    let temp = response.UserAttributes.find(obj => {return obj.Name === 'sub'}).Value;
+    return temp
+  }
+
+
 
