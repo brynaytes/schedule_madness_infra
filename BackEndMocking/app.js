@@ -1,4 +1,4 @@
-import { handler } from './src/index.mjs' 
+import { handler } from './src/index.mjs'
 import express from 'express';
 
 //const express = require('express')
@@ -11,18 +11,20 @@ app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
- app.post('/meetings', (req, res) => {
+app.post('/meetings', (req, res) => {
   let temp = {
-    body : JSON.stringify(req.body),
-    headers : {
+    body: JSON.stringify(req.body),
+    headers: {
       Authorization: req.get("Authorization")
     }
   }
-
-
-    //The 'then' portion here waits for the async response to resolve
-    handler(temp).then((temp) => res.send(temp ))
-  })
+  //The 'then' portion here waits for the async response to resolve
+  handler(temp).then((temp) => {
+    res.status(temp.statusCode)
+    res.send(JSON.parse(temp.body))
+  }
+  )
+})
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
