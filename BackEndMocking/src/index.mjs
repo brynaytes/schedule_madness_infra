@@ -66,7 +66,7 @@ async function createMeeting(data,userID){
   if(!userID || userID == ""){
     return "Authentication is required for this request";
   }
-  let meetingID = Date.now() + Math.floor(Math.random() *100)+"" ;//needs to become true random
+  let meetingID = createId();
   const command = new PutCommand({
     TableName: "MeetingInfo",
     Item: {
@@ -99,7 +99,7 @@ async function getMeetings(meetingID){
 async function addTimes(data,userID){
   //Auth optional
   let meetingID =  data.MeetingID;
-  let DateTimeID =  Date.now() + Math.floor(Math.random() *100)+"" ;//needs to become true random
+  let DateTimeID =  createId();
 
   const command = new PutCommand({
     TableName: "MeetingAvailability",
@@ -206,4 +206,6 @@ async function doAuth(authToken){
   }
 
 
-
+function createId(){
+  return crypto.randomUUID();
+}
