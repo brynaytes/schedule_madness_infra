@@ -16,7 +16,9 @@ export const handler = async (event) => {
     if(!userID){
       const response = {
         statusCode: 401,
-        body: ("Auth Token was invalid or missing."),
+        body: ({
+            message : "Auth Token was invalid or missing"
+          }),
         headers: { 
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*' // replace with hostname of frontend (CloudFront)
