@@ -16,3 +16,9 @@ module "s3_policy" {
   s3_bucket_id   = module.s3.s3_id
   cloudfront_arn = module.cf_distribution.distribution_arn
 }
+
+module "cognito_secret" {
+  source = "./modules/SecretsManager"
+  secret_name = "${var.site_name}-${var.environment}-cognito-secret"
+  Secret = { local : "enter value here"}
+}

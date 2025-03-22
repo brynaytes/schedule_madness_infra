@@ -3,3 +3,8 @@ variable "site_name" {
   default     = "scheduler-madness"
   description = "Name of the site."
 }
+
+variable "environment" {
+  type = string
+  default = "dev"
+}
