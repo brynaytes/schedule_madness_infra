@@ -1,2 +1,6 @@
-Infra\.terraform.lock.hcl
-Infra\.terraform
+#terraform housekeeping
+Infra/.terraform.lock.hcl
+Infra/.terraform
+
+#zip files uploaded to lambda
+Infra/compressed/

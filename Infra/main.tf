@@ -22,3 +22,9 @@ module "cognito_secret" {
   secret_name = "${var.site_name}-${var.environment}-cognito-secret"
   Secret = { local : "enter value here"}
 }
+
+module "MeetingsLambda" {
+  source = "./modules/MeetingsLambda"
+  lambda_function_name = "${var.site_name}-${var.environment}-meetings"
+  target_project_folder = "meetings"
+}

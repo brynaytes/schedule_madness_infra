@@ -7,4 +7,5 @@ variable "site_name" {
 variable "environment" {
   type = string
   default = "dev"
+  description = "Name of environment to be added to the resources"
 }
