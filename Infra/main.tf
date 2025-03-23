@@ -23,8 +23,31 @@ module "cognito_secret" {
   Secret = { local : "enter value here"}
 }
 
-module "MeetingsLambda" {
-  source = "./modules/MeetingsLambda"
+module "meetings_lambda" {
+  source = "./modules/Lambda"
   lambda_function_name = "${var.site_name}-${var.environment}-meetings"
   target_project_folder = "meetings"
+  additional_aws_iam_policy_document = data.aws_iam_policy_document.meetings_lambda_additional_policy.json
+}
+
+module "cognito_authorizer_lambda" {
+  source = "./modules/Lambda"
+  lambda_function_name = "${var.site_name}-${var.environment}-Cognito-Authorizer"
+  target_project_folder = "Cognito-Authorizer"
+  additional_aws_iam_policy_document = data.aws_iam_policy_document.cognito_authorizer_lambda_additional_policy.json
+}
+
+
+data "aws_iam_policy_document" "cognito_authorizer_lambda_additional_policy" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "secretsmanager:*"
+    ]
+
+    resources = [
+      module.cognito_secret.cognito_secret_arn
+    ]
+  }
 }

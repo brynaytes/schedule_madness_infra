@@ -42,8 +42,7 @@ data "aws_iam_policy_document" "lambda_logging" {
 }
 
 resource "aws_iam_policy" "lambda_logging" {
-  name        = "lambda_logging"
-  path        = "/"
+  name        = "lambda_logging_${var.lambda_function_name}_${random_string.suffix.result}"
   description = "IAM policy for logging from a lambda"
   policy      = data.aws_iam_policy_document.lambda_logging.json
 }
@@ -60,7 +59,7 @@ data "archive_file" "lambda" {
 }
 
 resource "aws_iam_role" "iam_for_lambda" {
-  name               = "iam_for_${var.lambda_function_name}"
+  name               = "iam_for_${var.lambda_function_name}_${random_string.suffix.result}"
   assume_role_policy =  jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -74,4 +73,26 @@ resource "aws_iam_role" "iam_for_lambda" {
       },
     ]
   })
+}
+
+
+resource "aws_iam_policy" "lambda_additional_iam_policy" {
+  count = var.additional_aws_iam_policy_document != null ? 1 : 0
+  name        = "lambda_additional_iam_policy_${var.lambda_function_name}_${random_string.suffix.result}"
+  description = "IAM policy for a lambda"
+  policy      = var.additional_aws_iam_policy_document
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_additional_policy_attachment" {
+  count = var.additional_aws_iam_policy_document != null ? 1 : 0
+  role       = aws_iam_role.iam_for_lambda.name
+  policy_arn = aws_iam_policy.lambda_additional_iam_policy[0].arn
+    depends_on = [
+      aws_iam_policy.lambda_additional_iam_policy
+    ]
+}
+
+resource "random_string" "suffix" {
+  length = 4
+  special = false
 }
