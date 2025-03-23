@@ -36,18 +36,3 @@ module "cognito_authorizer_lambda" {
   target_project_folder = "Cognito-Authorizer"
   additional_aws_iam_policy_document = data.aws_iam_policy_document.cognito_authorizer_lambda_additional_policy.json
 }
-
-
-data "aws_iam_policy_document" "cognito_authorizer_lambda_additional_policy" {
-  statement {
-    effect = "Allow"
-
-    actions = [
-      "secretsmanager:*"
-    ]
-
-    resources = [
-      module.cognito_secret.cognito_secret_arn
-    ]
-  }
-}
