@@ -36,3 +36,12 @@ module "cognito_authorizer_lambda" {
   target_project_folder = "Cognito-Authorizer"
   additional_aws_iam_policy_document = data.aws_iam_policy_document.cognito_authorizer_lambda_additional_policy.json
 }
+
+module "api_gateway" {
+  source = "./modules/ApiGateway"
+  environment = var.environment
+  target_lambda_invoke_arn = module.meetings_lambda.lambda_invoke_arn
+  target_lambda_name = "${var.site_name}-${var.environment}-meetings"
+  accountId = data.aws_caller_identity.current.account_id
+  myregion = data.aws_region.current.name
+}

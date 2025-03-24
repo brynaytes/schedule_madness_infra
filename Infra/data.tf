@@ -33,3 +33,6 @@ data "aws_iam_policy_document" "cognito_authorizer_lambda_additional_policy" {
     ]
   }
 }
+
+data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}
