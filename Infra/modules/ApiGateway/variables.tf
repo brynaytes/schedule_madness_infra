@@ -1,9 +1,15 @@
 variable environment {
     type =  string
 }
-variable target_lambda_name {
+variable meeting_lambda_name {
     type = string
 }
-variable target_lambda_invoke_arn {
+variable meeting_lambda_invoke_arn {
+    type = string
+}
+variable user_lambda_name {
+    type = string
+}
+variable user_lambda_invoke_arn {
     type = string
 }

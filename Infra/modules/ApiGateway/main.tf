@@ -9,39 +9,39 @@ resource "aws_api_gateway_rest_api" "api" {
   
 }
 
-resource "aws_api_gateway_resource" "resource" {
+resource "aws_api_gateway_resource" "meeting_resource" {
   path_part   = "meetings"
   parent_id   = aws_api_gateway_rest_api.api.root_resource_id
   rest_api_id = aws_api_gateway_rest_api.api.id
 }
 
-resource "aws_api_gateway_method" "method" {
+resource "aws_api_gateway_method" "meeting_method" {
   rest_api_id   = aws_api_gateway_rest_api.api.id
-  resource_id   = aws_api_gateway_resource.resource.id
+  resource_id   = aws_api_gateway_resource.meeting_resource.id
   http_method   = "POST"
   authorization = "NONE"
 }
 
 
-resource "aws_api_gateway_integration" "integration" {
+resource "aws_api_gateway_integration" "meeting_integration" {
   rest_api_id             = aws_api_gateway_rest_api.api.id
-  resource_id             = aws_api_gateway_resource.resource.id
-  http_method             = aws_api_gateway_method.method.http_method
+  resource_id             = aws_api_gateway_resource.meeting_resource.id
+  http_method             = aws_api_gateway_method.meeting_method.http_method
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
-  uri                     = var.target_lambda_invoke_arn
+  uri                     = var.meeting_lambda_invoke_arn
 }
 
 
 # Lambda
-resource "aws_lambda_permission" "apigw_lambda" {
+resource "aws_lambda_permission" "meeting_apigw_lambda" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
-  function_name = var.target_lambda_name
+  function_name = var.meeting_lambda_name
   principal     = "apigateway.amazonaws.com"
 
   # More: http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html
-  source_arn = "arn:aws:execute-api:${var.myregion}:${var.accountId}:${aws_api_gateway_rest_api.api.id}/*/${aws_api_gateway_method.method.http_method}${aws_api_gateway_resource.resource.path}"
+  source_arn = "arn:aws:execute-api:${var.myregion}:${var.accountId}:${aws_api_gateway_rest_api.api.id}/*/${aws_api_gateway_method.meeting_method.http_method}${aws_api_gateway_resource.meeting_resource.path}"
 }
 
 
@@ -76,7 +76,7 @@ resource "aws_api_gateway_deployment" "deployment" {
   triggers = {
     redeployment = sha1(jsonencode(aws_api_gateway_rest_api.api.body))
   }
-
+  depends_on = [ aws_api_gateway_method.user_method,aws_api_gateway_method.meeting_method ]
   lifecycle {
     create_before_destroy = true
   }
@@ -88,58 +88,50 @@ resource "aws_api_gateway_stage" "stage" {
   stage_name    = "${var.environment}"
 }
 
-# HTTP OPTIONS method for pre-flight check
-resource "aws_api_gateway_method" "options_method" {
+module "meetings_options" {
+  source = "../ApiGatewayAddOptions"
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.meeting_resource.id
+}
+
+
+resource "aws_api_gateway_resource" "user_resource" {
+  path_part   = "user"
+  parent_id   = aws_api_gateway_rest_api.api.root_resource_id
+  rest_api_id = aws_api_gateway_rest_api.api.id
+}
+
+resource "aws_api_gateway_method" "user_method" {
   rest_api_id   = aws_api_gateway_rest_api.api.id
-  resource_id   = aws_api_gateway_resource.resource.id
-  http_method   = "OPTIONS"
+  resource_id   = aws_api_gateway_resource.user_resource.id
+  http_method   = "POST"
   authorization = "NONE"
 }
 
-# Define a mock integration
-resource "aws_api_gateway_integration" "options_integration" {
-  rest_api_id = aws_api_gateway_rest_api.api.id
-  resource_id = aws_api_gateway_resource.resource.id
-  http_method = aws_api_gateway_method.options_method.http_method
-  type        = "MOCK"
 
-  request_templates = {
-    "application/json" = jsonencode(
-      { "statusCode" : 200 }
-    )
-  }
+resource "aws_api_gateway_integration" "user_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.user_resource.id
+  http_method             = aws_api_gateway_method.user_method.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = var.user_lambda_invoke_arn
 }
 
-# Specify the response code and headers returned
-resource "aws_api_gateway_method_response" "options_response" {
-  rest_api_id = aws_api_gateway_rest_api.api.id
-  resource_id = aws_api_gateway_resource.resource.id
-  http_method = aws_api_gateway_method.options_method.http_method
-  status_code = 200
 
-  response_models = {
-    "application/json" = "Empty"
-  }
+# Lambda
+resource "aws_lambda_permission" "user_apigw_lambda" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = var.user_lambda_name
+  principal     = "apigateway.amazonaws.com"
 
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = true,
-    "method.response.header.Access-Control-Allow-Methods" = true,
-    "method.response.header.Access-Control-Allow-Origin"  = true
-  }
+  # More: http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html
+  source_arn = "arn:aws:execute-api:${var.myregion}:${var.accountId}:${aws_api_gateway_rest_api.api.id}/*/${aws_api_gateway_method.user_method.http_method}${aws_api_gateway_resource.user_resource.path}"
 }
 
-# The actual header values we are going to return
-resource "aws_api_gateway_integration_response" "options_integration_response" {
+module "user_options" {
+  source = "../ApiGatewayAddOptions"
   rest_api_id = aws_api_gateway_rest_api.api.id
-  resource_id = aws_api_gateway_resource.resource.id
-  http_method = aws_api_gateway_method.options_method.http_method
-  status_code = aws_api_gateway_method_response.options_response.status_code
-
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
-    "method.response.header.Access-Control-Allow-Methods" = "'OPTIONS'",
-    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
-  }
-
-  depends_on = [aws_api_gateway_integration.options_integration]
+  resource_id = aws_api_gateway_resource.user_resource.id
 }
