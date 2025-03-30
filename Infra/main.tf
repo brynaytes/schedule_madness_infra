@@ -37,6 +37,13 @@ module "cognito_authorizer_lambda" {
   additional_aws_iam_policy_document = data.aws_iam_policy_document.cognito_authorizer_lambda_additional_policy.json
 }
 
+module "cognito_user_lambda" {
+  source = "./modules/Lambda"
+  lambda_function_name = "${var.site_name}-${var.environment}-Cognito-User"
+  target_project_folder = "Cognito-User"
+  additional_aws_iam_policy_document = data.aws_iam_policy_document.cognito_authorizer_lambda_additional_policy.json
+}
+
 module "api_gateway" {
   source = "./modules/ApiGateway"
   environment = var.environment
@@ -44,6 +51,8 @@ module "api_gateway" {
   meeting_lambda_name = "${var.site_name}-${var.environment}-meetings"
   accountId = data.aws_caller_identity.current.account_id
   myregion = data.aws_region.current.name
-  user_lambda_invoke_arn = module.cognito_authorizer_lambda.lambda_invoke_arn
-  user_lambda_name =  "${var.site_name}-${var.environment}-Cognito-Authorizer"
+  authorizer_lambda_invoke_arn = module.cognito_authorizer_lambda.lambda_invoke_arn
+  authorizer_lambda_name =  "${var.site_name}-${var.environment}-Cognito-Authorizer"
+  user_lambda_invoke_arn = module.cognito_user_lambda.lambda_invoke_arn
+  user_lambda_name = "${var.site_name}-${var.environment}-Cognito-User"
 }

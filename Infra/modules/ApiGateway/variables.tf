@@ -13,3 +13,9 @@ variable user_lambda_name {
 variable user_lambda_invoke_arn {
     type = string
 }
+variable authorizer_lambda_name {
+    type = string
+}
+variable authorizer_lambda_invoke_arn {
+    type = string
+}

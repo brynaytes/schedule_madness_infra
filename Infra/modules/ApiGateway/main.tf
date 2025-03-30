@@ -118,6 +118,35 @@ resource "aws_api_gateway_integration" "user_integration" {
   uri                     = var.user_lambda_invoke_arn
 }
 
+resource "aws_api_gateway_resource" "login_resource" {
+  path_part   = "login"
+  parent_id   = aws_api_gateway_rest_api.api.root_resource_id
+  rest_api_id = aws_api_gateway_rest_api.api.id
+}
+
+resource "aws_api_gateway_resource" "login_proxy_resource" {
+  path_part   = "{code}"
+  parent_id   = aws_api_gateway_resource.login_resource.id
+  rest_api_id = aws_api_gateway_rest_api.api.id
+}
+
+resource "aws_api_gateway_method" "login_proxy_method" {
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  resource_id   = aws_api_gateway_resource.login_proxy_resource.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+
+resource "aws_api_gateway_integration" "login_proxy_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.login_proxy_resource.id
+  http_method             = aws_api_gateway_method.login_proxy_method.http_method
+  integration_http_method = "GET"
+  type                    = "AWS_PROXY"
+  uri                     = var.authorizer_lambda_invoke_arn
+  depends_on = [ aws_api_gateway_resource.login_resource,aws_api_gateway_resource.login_proxy_resource ]
+}
 
 # Lambda
 resource "aws_lambda_permission" "user_apigw_lambda" {
@@ -134,4 +163,10 @@ module "user_options" {
   source = "../ApiGatewayAddOptions"
   rest_api_id = aws_api_gateway_rest_api.api.id
   resource_id = aws_api_gateway_resource.user_resource.id
+}
+
+module "login_proxy_options" {
+  source = "../ApiGatewayAddOptions"
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.login_proxy_resource.id
 }
