@@ -56,3 +56,50 @@ module "api_gateway" {
   user_lambda_invoke_arn = module.cognito_user_lambda.lambda_invoke_arn
   user_lambda_name = "${var.site_name}-${var.environment}-Cognito-User"
 }
+
+variable "meeting_availability_definition" {
+  type = list(map(string))
+  default = [
+    {
+      name = "MeetingID"
+      type = "S"
+    },
+    {
+      name = "DateTimeID"
+      type = "S"
+    }
+  ]
+}
+
+module "meeting_availability_dynamo_table" {
+  source = "./modules/DynamoDB"
+  table_name = "${var.site_name}-${var.environment}-MeetingAvailability"
+  attributes = var.meeting_availability_definition
+  partition_key = "MeetingID"
+  sort_key = "DateTimeID"
+}
+
+variable "meeting_info_definition" {
+  type = list(map(string))
+  default = [
+    {
+      name = "MeetingID"
+      type = "S"
+    },
+    {
+      name = "UserID"
+      type = "S"
+    }
+  ]
+}
+
+module "meeting_info_dynamo_table" {
+  source = "./modules/DynamoDB"
+  table_name = "${var.site_name}-${var.environment}-MeetingInfo"
+  attributes = var.meeting_info_definition
+  partition_key = "MeetingID"
+  sort_key = "UserID"
+  secondary_index = true
+  secondary_partitan_key =  "UserID"
+  secondary_sort_key = "MeetingID"
+}
