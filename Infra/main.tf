@@ -70,7 +70,6 @@ variable "meeting_availability_definition" {
     }
   ]
 }
-
 module "meeting_availability_dynamo_table" {
   source = "./modules/DynamoDB"
   table_name = "${var.site_name}-${var.environment}-MeetingAvailability"
@@ -93,6 +92,8 @@ variable "meeting_info_definition" {
   ]
 }
 
+
+
 module "meeting_info_dynamo_table" {
   source = "./modules/DynamoDB"
   table_name = "${var.site_name}-${var.environment}-MeetingInfo"
@@ -103,3 +104,4 @@ module "meeting_info_dynamo_table" {
   secondary_partitan_key =  "UserID"
   secondary_sort_key = "MeetingID"
 }
+

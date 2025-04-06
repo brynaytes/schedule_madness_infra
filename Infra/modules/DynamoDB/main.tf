@@ -17,7 +17,7 @@ resource  "aws_dynamodb_table" "dynamodb-table" {
     }
 
     dynamic "global_secondary_index"{
-        for_each = var.secondary_index ? [] : [1]
+        for_each = var.secondary_index ? [1] : []
         content {
             name = "${var.secondary_partitan_key}-${var.secondary_sort_key}-index"
             hash_key = var.secondary_partitan_key
@@ -27,5 +27,6 @@ resource  "aws_dynamodb_table" "dynamodb-table" {
             projection_type    = "ALL"
         }
     }
+    
 }
 
