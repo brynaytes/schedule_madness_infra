@@ -20,7 +20,7 @@ module "s3_policy" {
 module "cognito_secret" {
   source = "./modules/SecretsManager"
   secret_name = "${var.site_name}-${var.environment}-cognito-secret"
-  Secret = { local : "enter value here"}
+  Secret = { local : module.cognito_user_pool.client_secret}
 }
 
 module "meetings_lambda" {
@@ -92,8 +92,6 @@ variable "meeting_info_definition" {
   ]
 }
 
-
-
 module "meeting_info_dynamo_table" {
   source = "./modules/DynamoDB"
   table_name = "${var.site_name}-${var.environment}-MeetingInfo"
@@ -105,3 +103,10 @@ module "meeting_info_dynamo_table" {
   secondary_sort_key = "MeetingID"
 }
 
+module "cognito_user_pool" {
+  source = "./modules/CognitoUserPool"
+  callback_URLs = [ "http://localhost:4200/login" , "https://www.${module.cf_distribution.distribution_url}/login"]
+  logout_URLs = [ "http://localhost:4200/logout" , "https://www.${module.cf_distribution.distribution_url}/logout"]
+
+  app_name = "${var.site_name}-${var.environment}"
+}
