@@ -67,7 +67,7 @@ jobs:
 
     - name: EnvDocMove
       working-directory: Website/scheduler-web-app/src/environments
-      run:  cp environment.$ENV_NAME.ts environment.ts
+      run:  cp environment.$ENV_NAME.ts environment.current.ts
 
     - name: Build
       working-directory: Website/scheduler-web-app
