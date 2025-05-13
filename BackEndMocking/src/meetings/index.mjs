@@ -10,21 +10,13 @@ export const handler = async (event) => {
   let authToken = event.headers.Authorization;
   let body;
   let userID;
+  var statusCode = 200;
 
   if(authToken){
     userID = await doAuth(authToken);
     if(!userID){
-      const response = {
-        statusCode: 401,
-        body: ({
-            message : "Auth Token was invalid or missing"
-          }),
-        headers: { 
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*' // replace with hostname of frontend (CloudFront)
-        },
-      };
-      return response;
+      statusCode = 401
+      return createResponse("Auth Token was invalid or missing", statusCode);
     }
   }
 
@@ -47,18 +39,11 @@ export const handler = async (event) => {
       break;
     default:
       body = "unknown action sent";
+      statusCode = 400;
       break;
     }
 
-    const response = {
-      statusCode: 200,
-      body: (JSON.stringify(body)),
-      headers: { 
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*' // replace with hostname of frontend (CloudFront)
-      },
-    };
-  return response;
+  return createResponse(body, statusCode);
 };
 
 async function createMeeting(data,userID){
@@ -99,14 +84,14 @@ async function getMeetings(meetingID){
 async function addTimes(data,userID){
   //Auth optional
   let meetingID =  data.MeetingID;
-  let DateTimeID =  createId();
+  let dateTimeID =  createId();
 
   const command = new PutCommand({
     TableName: "MeetingAvailability",
     Item: {
       MeetingID: meetingID,
       UserID : userID,
-      DateTimeID : DateTimeID,
+      DateTimeID : dateTimeID,
       data : data
     },
   });
@@ -209,3 +194,15 @@ async function doAuth(authToken){
 function createId(){
   return crypto.randomUUID();
 }
+
+function createResponse(body, status){
+  const response = {
+    statusCode: status,
+    body: (JSON.stringify(body)),
+    headers: { 
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*' // replace with hostname of frontend (CloudFront)
+    },
+  };
+return response;
+} 
