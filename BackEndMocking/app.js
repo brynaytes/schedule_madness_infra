@@ -1,4 +1,4 @@
-import { handler } from './src/index.mjs'
+import { meetingsHandler } from './src/meetings/index.mjs'
 import express from 'express';
 import cors from 'cors'
 
@@ -28,7 +28,7 @@ app.post('/meetings', (req, res) => {
     }
   }
   //The 'then' portion here waits for the async response to resolve
-  handler(temp).then((temp) => {
+  meetingsHandler(temp).then((temp) => {
     res.status(temp.statusCode)
     res.send((temp.body))
   }
