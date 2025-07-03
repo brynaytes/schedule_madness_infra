@@ -3,7 +3,7 @@ import {
   GetSecretValueCommand,
 } from "@aws-sdk/client-secrets-manager";
 
-const secret_name = "cognito-keys";
+const secret_name = "scheduler-madness-dev-cognito-secret";
 
 const client = new SecretsManagerClient({
   region: "us-east-1",
@@ -29,7 +29,7 @@ const secret =  JSON.parse(response.SecretString).local;
 export const handler = async (event) => {
   
   console.log(event);
-    console.log(secret);
+  console.log(secret);
   const origin = event.headers.origin + "/login"
   const code = event.pathParameters.code;
   var myHeaders = new Headers();
@@ -48,7 +48,7 @@ export const handler = async (event) => {
     redirect: 'follow'
   };
 
- let test = await fetch("https://testing-authentication-bryn.auth.us-east-1.amazoncognito.com/oauth2/token/", requestOptions)
+ let test = await fetch("https://scheduler-madness-dev.auth.us-east-1.amazoncognito.com/oauth2/token/", requestOptions)
     .then(response => response.json())
     .then(result =>{ 
       console.log(result);

@@ -8,6 +8,7 @@ resource "aws_cognito_user_pool_client" "client" {
   allowed_oauth_scopes                 = ["email", "openid", "phone", "profile", "aws.cognito.signin.user.admin"]
   allowed_oauth_flows                  = ["code", "implicit"]
   supported_identity_providers         = ["COGNITO"]
+  generate_secret     = true
 
 }
 

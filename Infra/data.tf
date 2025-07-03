@@ -15,7 +15,9 @@ data "aws_iam_policy_document" "meetings_lambda_additional_policy" {
     ]
 
     resources = [
-      "arn:aws:dynamodb:*:*:*:*"
+      "arn:aws:dynamodb:us-east-1:435058349363:table/scheduler-madness-dev-MeetingAvailability",
+      "arn:aws:dynamodb:us-east-1:435058349363:table/scheduler-madness-dev-MeetingInfo",
+      "arn:aws:dynamodb:us-east-1:435058349363:table/scheduler-madness-dev-MeetingInfo/index/UserID-MeetingID-index"
     ]
   }
 }

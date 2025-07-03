@@ -35,6 +35,21 @@ app.post('/meetings', (req, res) => {
   )
 })
 
+app.post('/login', (req, res) => {
+  let temp = {
+    body: JSON.stringify(req.body),
+    headers: {
+      Authorization: req.get("Authorization")
+    }
+  }
+  //The 'then' portion here waits for the async response to resolve
+  meetingsHandler(temp).then((temp) => {
+    res.status(temp.statusCode)
+    res.send((temp.body))
+  }
+  )
+})
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })

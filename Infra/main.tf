@@ -20,7 +20,7 @@ module "s3_policy" {
 module "cognito_secret" {
   source = "./modules/SecretsManager"
   secret_name = "${var.site_name}-${var.environment}-cognito-secret"
-  Secret = { local : module.cognito_user_pool.client_secret}
+  Secret = { local : base64encode( "${module.cognito_user_pool.client_id}:${module.cognito_user_pool.client_secret}")}
 }
 
 module "meetings_lambda" {

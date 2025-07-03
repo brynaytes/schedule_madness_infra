@@ -5,6 +5,10 @@ import { CognitoIdentityProviderClient, GetUserCommand } from "@aws-sdk/client-c
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
 
+const MeetingInfoTableName = 'scheduler-madness-dev-MeetingInfo'
+const MeetingAvailabilityTableName = 'scheduler-madness-dev-MeetingAvailability'
+
+
 export const handler = async (event) => {
   let eventBody = JSON.parse(event.body);
   let authToken = event.headers.Authorization;
@@ -53,7 +57,7 @@ async function createMeeting(data,userID){
   }
   let meetingID = createId();
   const command = new PutCommand({
-    TableName: "MeetingInfo",
+    TableName: MeetingInfoTableName,
     Item: {
       MeetingID: meetingID,
       UserID : userID,
@@ -74,7 +78,7 @@ async function getMeetings(meetingID){
         "#MeetingID": "MeetingID"
     },
     KeyConditionExpression: "#MeetingID = :mid", 
-    TableName: "MeetingInfo"
+    TableName: MeetingInfoTableName
   });
 
   let temp = await docClient.send(command);
@@ -87,7 +91,7 @@ async function addTimes(data,userID){
   let dateTimeID =  createId();
 
   const command = new PutCommand({
-    TableName: "MeetingAvailability",
+    TableName: MeetingAvailabilityTableName,
     Item: {
       MeetingID: meetingID,
       UserID : userID,
@@ -113,7 +117,7 @@ async function getMeetingList(userID){
         "#UserID": "UserID"
     },
     KeyConditionExpression: "#UserID = :uid", 
-    TableName: "MeetingInfo",
+    TableName: MeetingInfoTableName,
     IndexName : "UserID-MeetingID-index"
   });
   
@@ -139,7 +143,7 @@ async function getMeetingAvailabilityList(MeetingID){
         "#MeetingID": "MeetingID"
     },
     KeyConditionExpression: "#MeetingID = :mid", 
-    TableName: "MeetingAvailability"
+    TableName: MeetingAvailabilityTableName
   });
   
   let meetingsList = await docClient.send(command);
